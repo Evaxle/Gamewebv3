@@ -1,2 +1,2 @@
-# Gamewebv3
-The ultimate gameweb
+# Gameweb V3
+The newest and best yet gameweb
