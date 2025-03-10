@@ -1,46 +1,21 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<link rel="stylesheet" href="css/index.css" />
-		<link rel="stylesheet" href="css/themes.css" />
-
-		<script src="https://unpkg.com/lucide@latest"></script>
-
-		<link
-			rel="stylesheet"
-			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-		/>
-		<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-		<title>Space</title>
-		<link rel="icon" type="icon/x-icon" href="assets/favicon.ico" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1, maximum-scale=6.0, user-scalable=yes"
-		/>
-		<meta
-			name="description"
-			content="Launch into Space, the next gen proxy."
-		/>
-		<meta
-			name="keywords"
-			content="Proxy, Unblocker, Space Unblocker, Space"
-		/>
-		<meta property="og:image" content="/assets/logo.webp" />
-		<link
-			rel="preload"
-			as="style"
-			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-		/>
-		<link
-			rel="preload"
-			as="style"
-			href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000&display=swap"
-		/>
-		<link
-			rel="stylesheet"
-			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..400,0..1"
-		/>
-		<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+	<link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/themes.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <title>Space</title>
+    <link rel="icon" type="icon/x-icon" href="assets/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=6.0, user-scalable=yes" />
+    <meta name="description" content="Launch into Space, the next gen proxy." />
+    <meta name="keywords" content="Proxy, Unblocker, Space Unblocker, Space" />
+    <meta property="og:image" content="/assets/logo.webp" />
+    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..400,0..1" />
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 	</head>
     <style>
          .footer-link {
@@ -48,6 +23,60 @@
             left: 50%;
             transform: translateX(-50%);
             text-decoration: none;
+        }
+
+		body {
+            background: #1e1e1e;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            scrollbar-width: none;
+            padding: 10px;
+        }
+        .container::-webkit-scrollbar {
+            display: none;
+        }
+        .item {
+            background: #333;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+        .item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .open-button, .item button {
+            background: #ff5733;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .open-button:hover, .item button:hover {
+            background: #ff2e00;
         }
     </style>
 	<body style="overflow: hidden">
@@ -105,35 +134,45 @@
 				</li>
 			</ul>
 		</div>
-		<div class="header" style="text-align: center;">
-			<h1>
-				Gameweb V3
-			</h1>
-            <p>Made for Simplicity</p>
-			<p>The newest Gameweb</p>
-            <p>Made by</p><a class="footer-link" href="https://github.com/Evaxle" >Evaxle</a><br><br>
-			<button class="btn">
-				<a style="text-decoration: none" href="">
-					<p
-						style="
-								font-weight: 600;
-								margin: 7px;
-								font-size: 14px;
 
-								display: flex;
-								align-items: center;
-								font-family: 'DM Sans', sans-serif;
-								"
-					>
-						Proxy<i
-							style="width: 20x; margin-left: 5px"
-							alt="Get started icon"
-							data-lucide="sparkles"
-						></i>
-					</p>
-				</a>
-			</button><br>
-		</div>
+
+
+    <div class="container">
+        <div class="item">
+            <div class="title">Nebula</div>
+            <div class="info">Classic Search Proxy Fast</div>
+            <button onclick="openPage('Nebula.json')">Open Blank</button>
+        </div>
+        <div class="item">
+            <div class="title">Radius</div>
+            <div class="info">Classic Search Proxy Regular</div>
+            <button onclick="openPage('Radius.json')">Open Blank</button>
+        </div>
+        <div class="item">
+            <div class="title">Velocity</div>
+            <div class="info">Tab Search Proxy Fast</div>
+            <button onclick="openPage('Velocity.json')">Open Blank</button>
+        </div>
+        <div class="item">
+            <div class="title">Rammerhead</div>
+            <div class="info">Tab Search Proxy Regular</div>
+            <button onclick="openPage('Rammerhead.json')">Open Blank</button>
+        </div>
+    </div>
+    <script>
+        function openPage(jsonFile) {
+            fetch(jsonFile)
+                .then(response => response.json())
+                .then(data => {
+                    const randomUrl = data.urls[Math.floor(Math.random() * data.urls.length)];
+                    const newTab = window.open("about:blank", "_blank");
+                    newTab.document.write(`<iframe src="${randomUrl}" style="width:100vw; height:100vh; border:none;"></iframe>`);
+                });
+        }
+    </script>
+
+
+
 		<div style="z-index: -998">
 			<div class="blob"></div>
 			<div class="blobbig"></div>
