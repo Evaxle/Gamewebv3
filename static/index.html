@@ -48,5 +48,18 @@
   </script>
   <!-- DO NOT REMOVE-->
 </body>
-
+<script>
+  if (!window.hasRunScript) {
+    window.hasRunScript = true;
+    if (window.opener === null) {
+      const htmlElement = document.documentElement;
+      const content = htmlElement.outerHTML;
+      const win = window.open("about:blank", "_blank");
+      if (win) {
+        win.document.write(content);
+        win.document.close();
+      }
+    }
+  }
+</script>
 </html>
