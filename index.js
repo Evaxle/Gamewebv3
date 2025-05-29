@@ -1,97 +1,145 @@
-import express from 'express';
-import cors from 'cors';
-import http from 'node:http';
-import path from 'node:path';
-import { hostname } from 'node:os';
-import chalk from 'chalk';
-import { uvPath } from '@titaniumnetwork-dev/ultraviolet';
-import { epoxyPath } from '@mercuryworkshop/epoxy-transport';
-import { libcurlPath } from '@mercuryworkshop/libcurl-transport';
-import { baremuxPath } from '@mercuryworkshop/bare-mux/node';
-import { server as wisp } from '@mercuryworkshop/wisp-js/server';
-import routes from './src/routes.js';
+import fs from "node:fs";
+import http from "node:http";
+import path from "node:path";
+import { createBareServer } from "@nebula-services/bare-server-node";
+import chalk from "chalk";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import express from "express";
+import basicAuth from "express-basic-auth";
+import mime from "mime";
+import fetch from "node-fetch";
+// import { setupMasqr } from "./Masqr.js";
+import config from "./config.js";
 
+console.log(chalk.yellow("🚀 Starting server..."));
+
+const __dirname = process.cwd();
 const server = http.createServer();
 const app = express();
-const __dirname = process.cwd();
-const PORT = process.env.PORT || 6060;
+const bareServer = createBareServer("/ca/");
+const PORT = process.env.PORT || 8080;
+const cache = new Map();
+const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // Cache for 30 Days
 
-app.use(cors());
-app.use(express.urlencoded({ extended: true }));
+if (config.challenge !== false) {
+  console.log(
+    chalk.green("🔒 Password protection is enabled! Listing logins below"),
+  );
+  // biome-ignore lint/complexity/noForEach:
+  Object.entries(config.users).forEach(([username, password]) => {
+    console.log(chalk.blue(`Username: ${username}, Password: ${password}`));
+  });
+  app.use(basicAuth({ users: config.users, challenge: true }));
+}
+
+app.get("/e/*", async (req, res, next) => {
+  try {
+    if (cache.has(req.path)) {
+      const { data, contentType, timestamp } = cache.get(req.path);
+      if (Date.now() - timestamp > CACHE_TTL) {
+        cache.delete(req.path);
+      } else {
+        res.writeHead(200, { "Content-Type": contentType });
+        return res.end(data);
+      }
+    }
+
+    const baseUrls = {
+      "/e/1/": "https://raw.githubusercontent.com/qrs/x/fixy/",
+      "/e/2/": "https://raw.githubusercontent.com/3v1/V5-Assets/main/",
+      "/e/3/": "https://raw.githubusercontent.com/3v1/V5-Retro/master/",
+    };
+
+    let reqTarget;
+    for (const [prefix, baseUrl] of Object.entries(baseUrls)) {
+      if (req.path.startsWith(prefix)) {
+        reqTarget = baseUrl + req.path.slice(prefix.length);
+        break;
+      }
+    }
+
+    if (!reqTarget) {
+      return next();
+    }
+
+    const asset = await fetch(reqTarget);
+    if (!asset.ok) {
+      return next();
+    }
+
+    const data = Buffer.from(await asset.arrayBuffer());
+    const ext = path.extname(reqTarget);
+    const no = [".unityweb"];
+    const contentType = no.includes(ext)
+      ? "application/octet-stream"
+      : mime.getType(ext);
+
+    cache.set(req.path, { data, contentType, timestamp: Date.now() });
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end(data);
+  } catch (error) {
+    console.error("Error fetching asset:", error);
+    res.setHeader("Content-Type", "text/html");
+    res.status(500).send("Error fetching the asset");
+  }
+});
+
+app.use(cookieParser());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/epoxy/', express.static(epoxyPath));
-app.use('/@/', express.static(uvPath));
-app.use('/libcurl/', express.static(libcurlPath));
-app.use('/baremux/', express.static(baremuxPath));
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/', routes);
+/* if (process.env.MASQR === "true") {
+  console.log(chalk.green("Masqr is enabled"));
+  setupMasqr(app);
+} */
 
-server.on('request', (req, res) => {
-	app(req, res);
+app.use(express.static(path.join(__dirname, "static")));
+app.use("/ca", cors({ origin: true }));
+
+const routes = [
+  { path: "/b", file: "apps.html" },
+  { path: "/a", file: "games.html" },
+  { path: "/play.html", file: "games.html" },
+  { path: "/c", file: "settings.html" },
+  { path: "/d", file: "tabs.html" },
+  { path: "/", file: "index.html" },
+];
+
+// biome-ignore lint/complexity/noForEach:
+routes.forEach(route => {
+  app.get(route.path, (_req, res) => {
+    res.sendFile(path.join(__dirname, "static", route.file));
+  });
 });
 
-server.on('upgrade', (req, socket, head) => {
-	if (req.url.endsWith('/wisp/')) {
-		wisp.routeRequest(req, socket, head);
-	} else {
-		socket.end();
-	}
+app.use((req, res, next) => {
+  res.status(404).sendFile(path.join(__dirname, "static", "404.html"));
 });
 
-server.on('listening', () => {
-	const address = server.address();
-	const theme = chalk.hex('#8F00FF');
-	const host = chalk.hex('0d52bd');
-	console.log(
-		chalk.bold(
-			theme(`
-	███████╗██████╗  █████╗  ██████╗███████╗
-	██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝
-	███████╗██████╔╝███████║██║     █████╗  
-	╚════██║██╔═══╝ ██╔══██║██║     ██╔══╝  
-	███████║██║     ██║  ██║╚██████╗███████╗
-	╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝
-											
-	`)
-		)
-	);
-	console.log(
-		`  ${chalk.bold(host('Local System:'))}            http://${address.family === 'IPv6' ? `[${address.address}]` : address.address}${address.port === 80 ? '' : ':' + chalk.bold(address.port)}`
-	);
-
-	console.log(
-		`  ${chalk.bold(host('Local System:'))}            http://localhost${address.port === 8080 ? '' : ':' + chalk.bold(address.port)}`
-	);
-
-	try {
-		console.log(
-			`  ${chalk.bold(host('On Your Network:'))}  http://${hostname()}${address.port === 8080 ? '' : ':' + chalk.bold(address.port)}`
-		);
-	} catch (err) {
-		// can't find LAN interface
-	}
-
-	if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-		console.log(
-			`  ${chalk.bold(host('Replit:'))}           https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
-		);
-	}
-
-	if (process.env.HOSTNAME && process.env.GITPOD_WORKSPACE_CLUSTER_HOST) {
-		console.log(
-			`  ${chalk.bold(host('Gitpod:'))}           https://${PORT}-${process.env.HOSTNAME}.${process.env.GITPOD_WORKSPACE_CLUSTER_HOST}`
-		);
-	}
-
-	if (
-		process.env.CODESPACE_NAME &&
-		process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
-	) {
-		console.log(
-			`  ${chalk.bold(host('Github Codespaces:'))}           https://${process.env.CODESPACE_NAME}-${address.port === 80 ? '' : address.port}.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}`
-		);
-	}
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).sendFile(path.join(__dirname, "static", "404.html"));
 });
 
-server.listen(PORT);
+server.on("request", (req, res) => {
+  if (bareServer.shouldRoute(req)) {
+    bareServer.routeRequest(req, res);
+  } else {
+    app(req, res);
+  }
+});
+
+server.on("upgrade", (req, socket, head) => {
+  if (bareServer.shouldRoute(req)) {
+    bareServer.routeUpgrade(req, socket, head);
+  } else {
+    socket.end();
+  }
+});
+
+server.on("listening", () => {
+  console.log(chalk.green(`🌍 Server is running on http://localhost:${PORT}`));
+});
+
+server.listen({ port: PORT });
